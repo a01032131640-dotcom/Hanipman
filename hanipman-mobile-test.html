@@ -1,0 +1,797 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f85f35">
+  <title>한입만 취향 테스트</title>
+  <style>
+    :root {
+      --bg: #fff7ed;
+      --ink: #241812;
+      --muted: #735f55;
+      --line: rgba(36, 24, 18, 0.12);
+      --primary: #f85f35;
+      --primary-dark: #c7371c;
+      --green: #177a5b;
+      --yellow: #f5b331;
+      --blue: #2771b8;
+      --paper: #fffdf8;
+      --shadow: 0 18px 46px rgba(122, 55, 22, 0.16);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      overflow-x: hidden;
+      background:
+        radial-gradient(circle at 16% 0%, rgba(245, 179, 49, 0.3), transparent 30%),
+        linear-gradient(180deg, #fff7ed 0%, #fffdf8 46%, #f2fbf5 100%);
+      color: var(--ink);
+    }
+
+    body {
+      width: 100vw;
+      display: flex;
+      justify-content: flex-start;
+      padding: max(18px, env(safe-area-inset-top)) 14px max(20px, env(safe-area-inset-bottom));
+    }
+
+    button {
+      border: 0;
+      font: inherit;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .app {
+      width: min(calc(100vw - 28px), 360px);
+      max-width: 360px;
+      min-height: calc(100vh - 38px);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      min-height: 38px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      white-space: nowrap;
+    }
+
+    .festival-name {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      text-align: right;
+    }
+
+    .mark {
+      width: 24px;
+      height: 24px;
+      border-radius: 7px;
+      background:
+        linear-gradient(135deg, transparent 46%, rgba(255, 255, 255, 0.45) 47% 55%, transparent 56%),
+        linear-gradient(135deg, var(--primary), var(--yellow));
+      box-shadow: inset 0 -2px 0 rgba(36, 24, 18, 0.12);
+    }
+
+    .screen {
+      display: none;
+      flex: 1;
+    }
+
+    .screen.active {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .hero,
+    .panel,
+    .result-card {
+      background: rgba(255, 253, 248, 0.92);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 26px 22px 22px;
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: auto -32px -46px auto;
+      width: 170px;
+      height: 170px;
+      border-radius: 50%;
+      background:
+        linear-gradient(90deg, rgba(255, 255, 255, 0.4) 0 10%, transparent 10% 20%),
+        var(--yellow);
+      opacity: 0.75;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      width: fit-content;
+      margin-bottom: 18px;
+      padding: 7px 10px;
+      border: 1px solid rgba(248, 95, 53, 0.32);
+      border-radius: 999px;
+      background: #fff2e1;
+      color: var(--primary-dark);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      position: relative;
+      max-width: 310px;
+      font-size: 38px;
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      position: relative;
+      margin-top: 16px;
+      max-width: 300px;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.55;
+      word-break: keep-all;
+    }
+
+    .facts {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin: 22px 0;
+    }
+
+    .fact {
+      min-height: 56px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.72);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .fact strong {
+      display: block;
+      margin-bottom: 2px;
+      color: var(--ink);
+      font-size: 15px;
+    }
+
+    .primary-btn,
+    .secondary-btn,
+    .text-btn {
+      min-height: 52px;
+      border-radius: 8px;
+      font-weight: 900;
+    }
+
+    .primary-btn {
+      width: 100%;
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 10px 18px rgba(248, 95, 53, 0.27);
+    }
+
+    .secondary-btn {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+    }
+
+    .text-btn {
+      background: transparent;
+      color: var(--muted);
+      padding: 0 8px;
+    }
+
+    .progress-wrap {
+      display: grid;
+      gap: 8px;
+      margin: 4px 0 12px;
+    }
+
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .progress {
+      height: 9px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(36, 24, 18, 0.09);
+    }
+
+    .bar {
+      width: 20%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--primary), var(--yellow));
+      transition: width 220ms ease;
+    }
+
+    .panel {
+      padding: 20px;
+    }
+
+    .question-title {
+      margin-bottom: 18px;
+      font-size: 25px;
+      line-height: 1.22;
+      letter-spacing: 0;
+      word-break: keep-all;
+    }
+
+    .choices {
+      display: grid;
+      gap: 10px;
+    }
+
+    .choice {
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      align-items: center;
+      min-height: 62px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      text-align: left;
+      box-shadow: 0 6px 14px rgba(77, 43, 22, 0.06);
+    }
+
+    .choice:active {
+      transform: translateY(1px);
+    }
+
+    .letter {
+      display: grid;
+      place-items: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: #fff2e1;
+      color: var(--primary-dark);
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .choice-text {
+      font-size: 15px;
+      font-weight: 800;
+      line-height: 1.32;
+      word-break: keep-all;
+    }
+
+    .nav-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .result-card {
+      overflow: hidden;
+      padding: 0;
+    }
+
+    .result-head {
+      padding: 22px 20px;
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.5), transparent 38%),
+        var(--result-color, var(--primary));
+      color: #fff;
+    }
+
+    .result-kicker {
+      margin-bottom: 8px;
+      font-size: 13px;
+      font-weight: 900;
+      opacity: 0.88;
+    }
+
+    .result-title {
+      font-size: 29px;
+      line-height: 1.12;
+      letter-spacing: 0;
+      word-break: keep-all;
+    }
+
+    .result-body {
+      display: grid;
+      gap: 14px;
+      padding: 20px;
+    }
+
+    .result-text {
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.58;
+      word-break: keep-all;
+    }
+
+    .info-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .info-item {
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .info-label {
+      margin-bottom: 4px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .info-value {
+      font-size: 15px;
+      font-weight: 850;
+      line-height: 1.38;
+      word-break: keep-all;
+    }
+
+    .actions {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: max(18px, env(safe-area-inset-bottom));
+      z-index: 20;
+      width: min(calc(100% - 32px), 360px);
+      padding: 13px 14px;
+      border-radius: 8px;
+      background: rgba(36, 24, 18, 0.92);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 800;
+      text-align: center;
+      transform: translate(-50%, 120%);
+      transition: transform 180ms ease;
+    }
+
+    .toast.show {
+      transform: translate(-50%, 0);
+    }
+
+    canvas {
+      display: none;
+    }
+
+    @media (max-width: 360px) {
+      body {
+        padding-inline: 10px;
+      }
+
+      h1 {
+        font-size: 33px;
+      }
+
+      .question-title {
+        font-size: 22px;
+      }
+
+      .choice {
+        grid-template-columns: 30px 1fr;
+        min-height: 58px;
+      }
+
+      .choice-text {
+        font-size: 14px;
+      }
+    }
+
+    @media (min-width: 700px) {
+      body {
+        justify-content: center;
+      }
+
+      .app {
+        width: 430px;
+        max-width: 430px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app" aria-live="polite">
+    <div class="topbar">
+      <div class="brand"><span class="mark" aria-hidden="true"></span>주문진 종합시장</div>
+      <div class="festival-name">한입만 간식축제</div>
+    </div>
+
+    <section class="screen active" id="start-screen">
+      <div class="hero">
+        <div class="eyebrow">30초 모바일 테스트</div>
+        <h1>나는 어떤 주문진 간식일까?</h1>
+        <p class="lead">내 입맛에 딱 맞는 시장 간식을 찾고, 결과에 나온 추천 미션으로 스탬프 투어까지 이어가 보세요.</p>
+        <div class="facts">
+          <div class="fact"><strong>5문항</strong>한 화면에 하나씩</div>
+          <div class="fact"><strong>결과 카드</strong>저장과 공유 가능</div>
+          <div class="fact"><strong>추천 한입</strong>간식 유형 안내</div>
+          <div class="fact"><strong>현장 미션</strong>스탬프 투어 연결</div>
+        </div>
+        <button class="primary-btn" id="start-btn" type="button">내 한입 취향 찾기</button>
+      </div>
+    </section>
+
+    <section class="screen" id="quiz-screen">
+      <div class="progress-wrap">
+        <div class="progress-meta">
+          <span id="step-label">1 / 5</span>
+          <span>한입만 취향 테스트</span>
+        </div>
+        <div class="progress" aria-hidden="true"><div class="bar" id="progress-bar"></div></div>
+      </div>
+      <div class="panel">
+        <h2 class="question-title" id="question-title"></h2>
+        <div class="choices" id="choices"></div>
+        <div class="nav-row">
+          <button class="secondary-btn" id="back-btn" type="button">이전</button>
+          <button class="text-btn" id="restart-small-btn" type="button">처음으로</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="result-screen">
+      <article class="result-card" id="result-card">
+        <div class="result-head" id="result-head">
+          <div class="result-kicker">나의 주문진 한입 취향은?</div>
+          <h2 class="result-title" id="result-title"></h2>
+        </div>
+        <div class="result-body">
+          <p class="result-text" id="result-text"></p>
+          <div class="info-list">
+            <div class="info-item">
+              <div class="info-label">추천 한입</div>
+              <div class="info-value" id="result-foods"></div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">추천 미션</div>
+              <div class="info-value" id="result-mission"></div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">추천 해시태그</div>
+              <div class="info-value">#주문진한입만 #주문진종합시장</div>
+            </div>
+          </div>
+        </div>
+      </article>
+      <div class="actions">
+        <button class="primary-btn" id="save-btn" type="button">결과 카드 저장하기</button>
+        <button class="secondary-btn" id="share-btn" type="button">결과 공유하기</button>
+        <button class="text-btn" id="restart-btn" type="button">다시 테스트하기</button>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status"></div>
+  <canvas id="card-canvas" width="1080" height="1350"></canvas>
+
+  <script>
+    const questions = [
+      {
+        text: "시장에 오면 가장 먼저 끌리는 것은?",
+        choices: [
+          ["A", "든든하게 배를 채울 수 있는 음식"],
+          ["B", "달콤하고 귀여운 간식"],
+          ["C", "고소한 냄새가 나는 전통 먹거리"],
+          ["D", "장날에만 만날 수 있는 특별한 음식"],
+          ["E", "매콤하고 자극적인 분식"]
+        ]
+      },
+      {
+        text: "나는 간식을 고를 때 주로 무엇을 본다?",
+        choices: [
+          ["A", "양이 넉넉한지"],
+          ["B", "사진이 예쁘게 나오는지"],
+          ["C", "재료가 좋은지"],
+          ["D", "시장 분위기가 느껴지는지"],
+          ["E", "맛이 강하고 확실한지"]
+        ]
+      },
+      {
+        text: "여행 중 시장에 들렀다면 나는?",
+        choices: [
+          ["A", "먼저 식사할 곳을 찾는다"],
+          ["B", "손에 들고 다닐 간식을 산다"],
+          ["C", "방앗간, 떡집 같은 오래된 가게를 구경한다"],
+          ["D", "오일장 좌판을 천천히 둘러본다"],
+          ["E", "친구와 여러 가지를 나눠 먹는다"]
+        ]
+      },
+      {
+        text: "내가 좋아하는 맛은?",
+        choices: [
+          ["A", "구수하고 든든한 맛"],
+          ["B", "달콤하고 부드러운 맛"],
+          ["C", "고소하고 담백한 맛"],
+          ["D", "정겹고 투박한 맛"],
+          ["E", "매콤하고 바삭한 맛"]
+        ]
+      },
+      {
+        text: "축제에서 가장 하고 싶은 것은?",
+        choices: [
+          ["A", "맛집 찾아 한 끼 먹기"],
+          ["B", "예쁜 사진 찍고 SNS 올리기"],
+          ["C", "직접 만들기 체험하기"],
+          ["D", "장날 분위기 즐기기"],
+          ["E", "친구들과 간식 투어하기"]
+        ]
+      }
+    ];
+
+    const results = {
+      A: {
+        title: "든든한 로컬 밥상형",
+        color: "#177a5b",
+        foods: "칼국수, 순대, 노포식당 메뉴, 시장표 든든한 한 끼",
+        mission: "노포식당 또는 든든한 먹거리 점포 방문하기",
+        text: "당신은 시장에 오면 제대로 된 한 끼를 찾는 사람입니다. 오래된 손맛, 든든한 양, 따뜻한 분위기가 잘 어울립니다."
+      },
+      B: {
+        title: "달콤한 간식 탐험형",
+        color: "#d75086",
+        foods: "찐빵, 도너츠, 호떡, 달콤한 떡, 간식류",
+        mission: "가장 사진이 예쁜 간식 찾고 SNS 인증하기",
+        text: "당신은 작고 귀여운 간식에 쉽게 마음이 움직이는 사람입니다. 손에 들고 걷기 좋은 달콤한 한입을 찾아보세요."
+      },
+      C: {
+        title: "고소한 전통 입맛형",
+        color: "#8a5a18",
+        foods: "인절미, 강정, 견과류, 참기름·들기름 먹거리, 방앗간 떡",
+        mission: "방앗간 또는 떡집 방문하고 고소한 냄새 찾기",
+        text: "당신은 유행보다 재료의 맛과 고소한 향을 좋아하는 사람입니다. 주문진 종합시장의 오래된 맛을 깊이 느낄 수 있습니다."
+      },
+      D: {
+        title: "장날 구경꾼형",
+        color: "#2771b8",
+        foods: "오일장 통닭, 호떡, 견과류, 제철 농산물 간식, 좌판 먹거리",
+        mission: "오일장 먹거리 하나 찾고 상인에게 추천 간식 물어보기",
+        text: "당신은 정해진 코스보다 우연히 만나는 재미를 좋아하는 사람입니다. 장날의 북적임과 그날그날 달라지는 먹거리에 끌립니다."
+      },
+      E: {
+        title: "매콤분식 친구형",
+        color: "#c7371c",
+        foods: "떡볶이, 튀김, 순대, 분식류, 나눠 먹는 간식",
+        mission: "친구 또는 가족과 서로 다른 간식 나눠 먹기",
+        text: "당신은 혼자 먹기보다 함께 나눠 먹는 간식을 좋아하는 사람입니다. 매콤하고 바삭하고 뜨거운 시장 분식이 잘 어울립니다."
+      }
+    };
+
+    const startScreen = document.querySelector("#start-screen");
+    const quizScreen = document.querySelector("#quiz-screen");
+    const resultScreen = document.querySelector("#result-screen");
+    const questionTitle = document.querySelector("#question-title");
+    const choicesEl = document.querySelector("#choices");
+    const stepLabel = document.querySelector("#step-label");
+    const progressBar = document.querySelector("#progress-bar");
+    const toast = document.querySelector("#toast");
+    const answers = [];
+    let current = 0;
+    let currentResultKey = "A";
+
+    function showScreen(screen) {
+      [startScreen, quizScreen, resultScreen].forEach((item) => item.classList.remove("active"));
+      screen.classList.add("active");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function renderQuestion() {
+      const question = questions[current];
+      stepLabel.textContent = `${current + 1} / ${questions.length}`;
+      progressBar.style.width = `${((current + 1) / questions.length) * 100}%`;
+      questionTitle.textContent = `Q${current + 1}. ${question.text}`;
+      choicesEl.innerHTML = "";
+
+      question.choices.forEach(([key, label]) => {
+        const button = document.createElement("button");
+        button.className = "choice";
+        button.type = "button";
+        button.innerHTML = `<span class="letter">${key}</span><span class="choice-text">${label}</span>`;
+        button.addEventListener("click", () => selectAnswer(key));
+        choicesEl.appendChild(button);
+      });
+
+      document.querySelector("#back-btn").disabled = current === 0;
+    }
+
+    function selectAnswer(key) {
+      answers[current] = key;
+      if (current < questions.length - 1) {
+        current += 1;
+        renderQuestion();
+      } else {
+        showResult();
+      }
+    }
+
+    function showResult() {
+      const counts = answers.reduce((acc, key) => {
+        acc[key] = (acc[key] || 0) + 1;
+        return acc;
+      }, {});
+      currentResultKey = ["A", "B", "C", "D", "E"].sort((a, b) => (counts[b] || 0) - (counts[a] || 0))[0];
+      const result = results[currentResultKey];
+
+      document.querySelector("#result-head").style.setProperty("--result-color", result.color);
+      document.querySelector("#result-title").textContent = result.title;
+      document.querySelector("#result-text").textContent = result.text;
+      document.querySelector("#result-foods").textContent = result.foods;
+      document.querySelector("#result-mission").textContent = result.mission;
+      showScreen(resultScreen);
+    }
+
+    function resetTest() {
+      answers.length = 0;
+      current = 0;
+      renderQuestion();
+      showScreen(startScreen);
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 1800);
+    }
+
+    function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+      const words = text.split(" ");
+      let line = "";
+      let currentY = y;
+      words.forEach((word) => {
+        const testLine = line ? `${line} ${word}` : word;
+        if (ctx.measureText(testLine).width > maxWidth && line) {
+          ctx.fillText(line, x, currentY);
+          line = word;
+          currentY += lineHeight;
+        } else {
+          line = testLine;
+        }
+      });
+      if (line) ctx.fillText(line, x, currentY);
+      return currentY + lineHeight;
+    }
+
+    function drawResultCard() {
+      const canvas = document.querySelector("#card-canvas");
+      const ctx = canvas.getContext("2d");
+      const result = results[currentResultKey];
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = "#fff7ed";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = result.color;
+      ctx.fillRect(0, 0, canvas.width, 430);
+      ctx.fillStyle = "rgba(255,255,255,0.16)";
+      ctx.beginPath();
+      ctx.arc(890, 80, 250, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "800 42px system-ui, sans-serif";
+      ctx.fillText("나의 주문진 한입 취향은?", 78, 118);
+      ctx.font = "900 82px system-ui, sans-serif";
+      wrapText(ctx, result.title, 78, 230, 820, 94);
+
+      ctx.fillStyle = "#241812";
+      ctx.font = "900 46px system-ui, sans-serif";
+      ctx.fillText("추천 한입", 78, 530);
+      ctx.font = "700 40px system-ui, sans-serif";
+      wrapText(ctx, result.foods, 78, 596, 900, 56);
+
+      ctx.font = "900 46px system-ui, sans-serif";
+      ctx.fillText("추천 미션", 78, 790);
+      ctx.font = "700 40px system-ui, sans-serif";
+      wrapText(ctx, result.mission, 78, 856, 900, 56);
+
+      ctx.fillStyle = "#735f55";
+      ctx.font = "700 34px system-ui, sans-serif";
+      wrapText(ctx, "#주문진한입만 #주문진종합시장", 78, 1120, 900, 48);
+
+      ctx.fillStyle = "#f85f35";
+      ctx.fillRect(78, 1210, 924, 10);
+      ctx.fillStyle = "#241812";
+      ctx.font = "900 34px system-ui, sans-serif";
+      ctx.fillText("주문진 종합시장 한입만 간식축제", 78, 1284);
+      return canvas;
+    }
+
+    function saveCard() {
+      const canvas = drawResultCard();
+      const link = document.createElement("a");
+      link.download = `hanipman-${currentResultKey}.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+      showToast("결과 카드가 저장되었습니다.");
+    }
+
+    async function shareResult() {
+      const result = results[currentResultKey];
+      const text = `나의 주문진 한입 취향은 ${result.title}! 추천 한입: ${result.foods} #주문진한입만 #주문진종합시장`;
+      if (navigator.share) {
+        try {
+          await navigator.share({ title: "한입만 취향 테스트", text });
+          return;
+        } catch (error) {
+          if (error.name === "AbortError") return;
+        }
+      }
+      await navigator.clipboard.writeText(text);
+      showToast("공유 문구를 복사했습니다.");
+    }
+
+    document.querySelector("#start-btn").addEventListener("click", () => {
+      current = 0;
+      renderQuestion();
+      showScreen(quizScreen);
+    });
+    document.querySelector("#back-btn").addEventListener("click", () => {
+      if (current > 0) {
+        current -= 1;
+        renderQuestion();
+      }
+    });
+    document.querySelector("#restart-small-btn").addEventListener("click", resetTest);
+    document.querySelector("#restart-btn").addEventListener("click", resetTest);
+    document.querySelector("#save-btn").addEventListener("click", saveCard);
+    document.querySelector("#share-btn").addEventListener("click", shareResult);
+  </script>
+</body>
+</html>
